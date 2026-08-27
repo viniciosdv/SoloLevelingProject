@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="topo4.jpg" alt="Solo Leveling ReAwakening Banner" width="100%">
+  <img src="./topo4.jpg" alt="Solo Leveling ReAwakening Banner" width="100%">
 </p>
 
 <h1 align="center">⚔️ SOLO LEVELING // SHADOW SYSTEM ⚔️</h1>
@@ -10,10 +10,11 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/STATUS-SYSTEM%20ONLINE-38bdf8?style=for-the-badge&logoColor=38bdf8&color=040612" alt="Status">
-  <img src="https://img.shields.io/badge/RANK-S-38bdf8?style=for-the-badge&color=040612" alt="Rank S">
+  <img src="https://img.shields.id/badge/RANK-S-38bdf8?style=for-the-badge&color=040612" alt="Rank S">
   <img src="https://img.shields.io/badge/LICENSE-MIT-38bdf8?style=for-the-badge&color=040612" alt="License">
 </p>
 
+---
 ---
 
 ## 💻 Sobre o Projeto
