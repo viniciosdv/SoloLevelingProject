@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./topo4.jpg" alt="Solo Leveling ReAwakening Banner" width="100%">
+  <img src="topo4.jpg" alt="Solo Leveling ReAwakening Banner" width="100%">
 </p>
 
 <h1 align="center">⚔️ SOLO LEVELING // SHADOW SYSTEM ⚔️</h1>
