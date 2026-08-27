@@ -1,0 +1,733 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#040612">
+  <title>SOLO LEVELING</title>
+
+  <!-- Favicon / Ícone da Aba -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='%23040612'/><polygon points='50,10 90,90 10,90' fill='%2338bdf8'/><text x='50' y='72' font-size='55' font-weight='900' font-family='Orbitron, sans-serif' fill='%23040612' text-anchor='middle'>S</text></svg>">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root{
+      --bg:#040612;
+      --ink:#f3f6f8;
+      --muted:#7f919f;
+      --cyan:#38bdf8;
+      --accent:var(--cyan);
+      --char-glow:rgba(56, 189, 248, 0.45);
+      --mx:0;
+      --my:0;
+    }
+
+    *{box-sizing:border-box}
+    html{scroll-behavior:auto;background:var(--bg)}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--ink);
+      font-family:"Space Grotesk",system-ui,sans-serif;
+      overflow-x:hidden;
+    }
+    body.is-loading{overflow:hidden}
+
+    ::selection{background:var(--cyan);color:var(--bg)}
+    a{color:inherit;text-decoration:none}
+
+    /* LOADER */
+    .loader{
+      position:fixed;inset:0;z-index:9999;
+      display:grid;place-items:center;
+      background:radial-gradient(circle at 50% 50%,rgba(56, 189, 248,.12),transparent 40%), var(--bg);
+      transition:opacity .5s ease,visibility .5s ease;
+    }
+    .loader.done{opacity:0;visibility:hidden;pointer-events:none}
+    .loader-inner{width:min(520px,80vw)}
+    .loader-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;font:700 12px/1 "Barlow Condensed";letter-spacing:.24em}
+    .loader-top span:last-child{color:var(--accent)}
+    .loader-bar{height:2px;background:rgba(255,255,255,.12);overflow:hidden}
+    .loader-fill{width:0;height:100%;background:var(--accent);box-shadow:0 0 20px var(--accent);transition:width .15s}
+    .loader-foot{margin-top:10px;color:#61717d;font-size:10px;letter-spacing:.16em}
+
+    .noise{
+      position:fixed;inset:-50%;z-index:50;pointer-events:none;opacity:.018;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.95' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+    }
+
+    .grid{
+      position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.06;
+      background:
+        linear-gradient(rgba(56,189,248,.05) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(56,189,248,.05) 1px,transparent 1px);
+      background-size:64px 64px;
+      transform:perspective(900px) rotateX(60deg) translateY(18%) scale(1.3) translate(calc(var(--mx) * 15px), calc(var(--my) * 15px));
+      transition: transform 0.1s ease-out;
+    }
+
+    #particles{
+      position:fixed;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;
+    }
+
+    .topbar{
+      position:fixed;top:0;left:0;right:0;z-index:70;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:22px clamp(18px,4vw,64px);
+      pointer-events:none;
+    }
+    .brand,.top-status{pointer-events:auto}
+    .brand{
+      display:flex;align-items:center;gap:12px;
+      font:900 18px/1 "Barlow Condensed";letter-spacing:.08em;
+    }
+    .brand-mark{
+      width:30px;height:30px;display:grid;place-items:center;
+      background:var(--cyan);clip-path:polygon(50% 0%, 0% 100%, 100% 100%);
+      color:var(--bg);font-weight:900;font-family:'Orbitron', sans-serif;
+    }
+    .brand small{font:600 9px/1 "Space Grotesk";color:#73838e;letter-spacing:.18em}
+    .top-status{display:flex;align-items:center;gap:18px;color:#8b9aa4;font-size:10px;letter-spacing:.2em;text-transform:uppercase}
+    .status-dot{width:6px;height:6px;background:var(--cyan);box-shadow:0 0 14px var(--cyan);border-radius:50%}
+
+    /* HERO SEM CAIXA */
+    .hero{
+      min-height:100svh;position:relative;z-index:2;
+      display:flex;align-items:center;justify-content:flex-start;
+      padding:0 clamp(24px, 8vw, 120px);
+      overflow:hidden;
+      background: var(--bg);
+    }
+
+    .hero-bg-art {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      overflow: hidden;
+      transform: translate(calc(var(--mx) * -15px), calc(var(--my) * -15px));
+      transition: transform 0.1s ease-out;
+    }
+    .hero-bg-art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center right;
+      opacity: 0.85;
+      mask-image: radial-gradient(circle at 75% 50%, rgba(0,0,0,1) 30%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0) 90%),
+                  linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 40%);
+      -webkit-mask-image: radial-gradient(circle at 75% 50%, rgba(0,0,0,1) 30%, rgba(0,0,0,0.6) 65%, rgba(0,0,0,0) 90%),
+                          linear-gradient(to right, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 40%);
+    }
+
+    .hero-copy{
+      position:relative;
+      z-index:8;
+      max-width:580px;
+    }
+    .eyebrow{
+      display:flex;align-items:center;gap:12px;
+      color:var(--cyan);font:700 12px/1 "Barlow Condensed";letter-spacing:.28em;text-transform:uppercase;
+    }
+    .eyebrow:before{content:"";width:42px;height:1px;background:var(--cyan);box-shadow:0 0 12px var(--cyan)}
+    .hero h1{
+      margin:20px 0 14px;
+      font:900 clamp(60px,9vw,150px)/.76 "Barlow Condensed";
+      letter-spacing:-.045em;text-transform:uppercase;
+    }
+    .hero h1 span{color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.45)}
+    .hero p{max-width:440px;margin:0;color:#94a3b8;font-size:14px;line-height:1.8}
+    
+    .hero-scroll{
+      position:absolute;right:clamp(24px,5vw,76px);bottom:12vh;z-index:8;
+      writing-mode:vertical-rl;display:flex;align-items:center;gap:14px;
+      color:#8495a0;font:600 11px/1 "Space Grotesk";letter-spacing:.24em;
+    }
+    .hero-scroll i{width:1px;height:74px;background:linear-gradient(var(--cyan),transparent)}
+
+    /* SEÇÃO DE HISTÓRIA / PERSONAGENS */
+    .story{
+      position:relative;z-index:3;
+      height:100svh;
+      overflow:hidden;
+    }
+    .stage{
+      position:relative;width:100%;height:100svh;overflow:hidden;
+      background: var(--bg);
+      transform:translateZ(0);
+      backface-visibility:hidden;
+    }
+
+    .tech-corner{
+      position:absolute;z-index:8;color:#5f7480;font:600 8px/1.8 "Space Grotesk";letter-spacing:.16em;text-transform:uppercase;
+    }
+    .tech-corner.tl{left:5vw;top:15vh}
+    .tech-corner.tr{right:5vw;top:16vh;text-align:right}
+    .tech-corner.bl{left:5vw;bottom:12vh}
+    .tech-corner.br{right:5vw;bottom:12vh;text-align:right}
+    .tech-corner strong{color:var(--accent);font-size:11px}
+
+    .scanline{
+      position:absolute;left:0;right:0;top:-10%;height:1px;z-index:9;
+      background:linear-gradient(90deg,transparent,var(--accent),transparent);
+      opacity:.45;
+    }
+
+    .orbit{
+      position:absolute;left:50%;top:50%;width:min(70vw,1000px);aspect-ratio:1;
+      transform:translate(-50%,-50%);border:1px solid rgba(255,255,255,.04);
+      border-radius:50%;z-index:1;pointer-events:none;
+    }
+
+    .lightning-transition {
+      position: fixed;
+      inset: 0;
+      z-index: 95;
+      pointer-events: none;
+      display: flex;
+      justify-content: space-around;
+      opacity: 0;
+      transform: scaleY(0);
+      transform-origin: top;
+      filter: blur(8px);
+      background: linear-gradient(180deg, rgba(56,189,248,0.8) 0%, rgba(255,255,255,0.9) 50%, rgba(56,189,248,0.2) 100%);
+      box-shadow: 0 0 40px var(--cyan), inset 0 0 30px #ffffff;
+    }
+
+    .agent{
+      position:absolute;inset:0;z-index:5;
+      visibility:hidden;
+      will-change:transform, opacity;
+      transform:translateZ(0);
+    }
+    .agent.active{visibility:visible}
+    
+    .agent-art{
+      position:absolute;inset:0;
+      display:flex;align-items:center;justify-content:flex-end;
+      padding-right:5vw;
+      transform: translate(calc(var(--mx) * -20px), calc(var(--my) * -20px));
+      transition: transform 0.1s ease-out;
+      will-change:transform, opacity;
+    }
+    .agent-art img{
+      width:min(65vw,1100px);height:100%;display:block;object-fit:contain;object-position:center right;
+      user-select:none;-webkit-user-drag:none;
+      opacity: 0.9;
+      mask-image: radial-gradient(circle at 70% 50%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 85%);
+      -webkit-mask-image: radial-gradient(circle at 70% 50%, rgba(0,0,0,1) 40%, rgba(0,0,0,0) 85%);
+    }
+
+    /* PNG COM O BRILHO COLORIDO DINÂMICO E CORREÇÃO DE CORTE NA BASE */
+    .character-png {
+      position: absolute;
+      left: clamp(20px, 4vw, 80px);
+      bottom: 0;
+      height: auto;
+      max-height: 62vh;
+      width: min(38vw, 480px);
+      object-fit: contain;
+      object-position: bottom left;
+      z-index: 6; 
+      pointer-events: none;
+      opacity: 0.92;
+      
+      /* Suaviza apenas as bordas superiores e laterais, liberando a base sem cortes secos */
+      mask-image: linear-gradient(to top, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%);
+      -webkit-mask-image: linear-gradient(to top, rgba(0,0,0,1) 65%, rgba(0,0,0,0) 100%);
+
+      /* Efeito de brilho customizado com a cor correspondente usando drop-shadow */
+      filter: drop-shadow(0 0 35px var(--char-glow)) drop-shadow(0 10px 30px rgba(0, 0, 0, 0.95));
+      transition: filter 0.4s ease;
+    }
+
+    .agent-info{
+      position: absolute;
+      right: clamp(24px, 6vw, 100px);
+      bottom: clamp(60px, 12vh, 140px);
+      z-index: 10;
+      width: min(460px, 42vw);
+      will-change: transform, opacity;
+      text-align: right;
+    }
+    
+    .img-fallback {
+      display: none;
+      width: 100%; height: 100%;
+      place-content: center;
+      text-align: center;
+      font: 900 clamp(40px, 6vw, 90px) "Barlow Condensed";
+      color: rgba(255,255,255,0.15);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .agent-number{font:800 13px/1 "Barlow Condensed";color:var(--accent);letter-spacing:.28em}
+    .agent-role{margin-top:10px;color:#81929d;font-size:10px;letter-spacing:.22em;text-transform:uppercase}
+    .agent-name{
+      margin:7px 0 5px;font:900 clamp(50px,7vw,110px)/.74 "Barlow Condensed";
+      letter-spacing:-.045em;text-transform:uppercase;
+      text-shadow:0 14px 30px rgba(0,0,0,.6);
+      position: relative;
+      z-index: 2;
+    }
+    .agent-name span{color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.25)}
+    .agent-desc{margin:14px 0 0;margin-left:auto;max-width:380px;color:#94a3b8;font-size:13px;line-height:1.75;position:relative;z-index:2;}
+    .agent-line{
+      margin-top:20px;
+      width:180px;
+      height:1px;
+      background:linear-gradient(270deg,var(--accent),transparent);
+      position:relative;
+      z-index:2;
+      margin-left:auto;
+    }
+
+    .side-progress{
+      position:absolute;right:clamp(24px,5vw,76px);top:50%;z-index:12;transform:translateY(-50%);
+      display:flex;align-items:center;gap:14px;
+    }
+    .progress-label{writing-mode:vertical-rl;color:#91a0a9;font:700 11px/1 "Barlow Condensed";letter-spacing:.22em}
+    .progress-label b{color:var(--accent);font-size:16px}
+    .progress-list{display:flex;flex-direction:column;gap:11px}
+    .progress-item{
+      width:26px;height:26px;border:1px solid rgba(255,255,255,.15);
+      display:grid;place-items:center;color:#6c7d87;font:700 9px/1 "Barlow Condensed";
+      transition:border-color .2s, color .2s, background .2s;position:relative;background: var(--bg);cursor:pointer;
+    }
+    .progress-item:before{content:"";position:absolute;right:-7px;width:4px;height:1px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .2s}
+    .progress-item.active{border-color:var(--accent);color:#fff;background:rgba(56,189,248,.15)}
+    .progress-item.active:before{transform:scaleX(1)}
+
+    .foreground{
+      position:absolute;inset:0;z-index:15;pointer-events:none;
+      background:
+        linear-gradient(90deg,rgba(4,6,18,.4),transparent 20% 80%,rgba(4,6,18,.4)),
+        linear-gradient(0deg,rgba(4,6,18,.5),transparent 25% 75%,rgba(4,6,18,.3));
+    }
+
+    .data-strip{
+      position:absolute;left:50%;top:13%;z-index:12;transform:translateX(-50%);
+      width:min(760px,58vw);display:flex;justify-content:space-between;
+      color:#4f6470;font:600 8px/1 "Space Grotesk";letter-spacing:.18em;
+    }
+    .data-strip b{color:#a4b4bc}
+
+    .site-footer{
+      position:relative;
+      z-index:20;
+      padding: 40px 6vw;
+      background: var(--bg);
+      border-top: 1px solid rgba(56, 189, 248, 0.15);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      text-align: center;
+    }
+    .footer-credit {
+      font-family: "Barlow Condensed", sans-serif;
+      font-size: 16px;
+      color: #94a3b8;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+    }
+    .footer-credit a {
+      color: var(--cyan);
+      font-weight: 800;
+      font-size: 18px;
+      margin-left: 6px;
+      padding: 4px 12px;
+      background: rgba(56, 189, 248, 0.08);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 4px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+    }
+    .footer-credit a:hover {
+      color: #fff;
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--cyan);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body class="is-loading">
+
+  <div class="loader" aria-hidden="true">
+    <div class="loader-inner">
+      <div class="loader-top"><span>INICIALIZANDO SISTEMA DE DUNGEON</span><span id="loadPct">00%</span></div>
+      <div class="loader-bar"><div class="loader-fill" id="loadFill"></div></div>
+      <div class="loader-foot">SINCRONIZANDO DADOS DE SOMBRA // VINICIOSDV</div>
+    </div>
+  </div>
+
+  <div class="noise"></div>
+  <div class="grid"></div>
+  <canvas id="particles"></canvas>
+
+  <div class="lightning-transition" id="lightningTransition"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#top">
+      <span class="brand-mark">S</span>
+      <span>MONARCH <small>// SHADOW SYSTEM</small></span>
+    </a>
+    <div class="top-status"><span class="status-dot"></span> SYSTEM ONLINE <span>ROLE PARA EVOLUIR</span></div>
+  </header>
+
+  <main id="top">
+    <section class="hero">
+      <div class="hero-bg-art">
+        <img src="topo4.png" alt="Sung Jinwoo" onerror="this.style.display='none';">
+      </div>
+
+      <div class="hero-copy">
+        <div class="eyebrow">MONARCA DAS SOMBRAS // PROTOCOLO ATIVO</div>
+        <h1>O MONARCA <span>DAS SOMBRAS</span></h1>
+        <p>Experiência otimizada de alta performance e exército das sombras.</p>
+      </div>
+
+      <div class="hero-scroll"><i></i> ROLE PARA ENTRAR</div>
+    </section>
+
+    <section class="story" id="agents">
+      <div class="stage" id="stage">
+        <div class="scanline"></div>
+        <div class="orbit"></div>
+        <div class="data-strip">
+          <span>PORTAL // S-RANK</span><span>STATUS DO MONARCA <b>DESPERTADO</b></span><span>MANA LINK <b>ESTÁVEL</b></span>
+        </div>
+
+        <div class="tech-corner tl">GATE 07<br><strong>ZONA DE RAID</strong></div>
+        <div class="tech-corner tr">CÓDIGO // 0X-SHADOW<br><strong>CRIPTOGRAFADO</strong></div>
+        <div class="tech-corner bl">ESTADO DA ALMA // 100%<br>EXÉRCITO DAS SOMBRAS</div>
+        <div class="tech-corner br">HORÁRIO DO SISTEMA<br><strong id="clock">00:00:00</strong></div>
+
+        <!-- AGENTE 1: JINWOO -->
+        <div class="agent active" data-agent="0">
+          <div class="agent-art">
+            <img src="jinwoo.jpg" alt="Sung Jinwoo" onerror="this.style.display='none';">
+            <div class="img-fallback">JINWOO</div>
+          </div>
+          
+          <img src="sungPNG1.png" alt="Jinwoo PNG" class="character-png">
+
+          <div class="agent-info">
+            <div class="agent-number">01 / 04</div>
+            <div class="agent-role gl-role">MONARCA DAS SOMBRAS // CAÇADOR NÍVEL S</div>
+            <div class="agent-name gl-name" data-value="JINWOO JINWOO">JINWOO <span>JINWOO</span></div>
+            <div class="agent-desc">De o caçador mais fraco da humanidade ao Monarca das Sombras. Comanda um vasto exército leal extraído direto da morte.</div>
+            <div class="agent-line"></div>
+          </div>
+        </div>
+
+        <!-- AGENTE 2: CHA HAE-IN -->
+        <div class="agent" data-agent="1">
+          <div class="agent-art">
+            <img src="chahaein.jpg" alt="Cha Hae-In" onerror="this.style.display='none';">
+            <div class="img-fallback">HAE-IN</div>
+          </div>
+          
+          <img src="chaPNG.png" alt="Cha Hae-In PNG" class="character-png">
+
+          <div class="agent-info">
+            <div class="agent-number">02 / 04</div>
+            <div class="agent-role gl-role">CAÇADORA NÍVEL S // A DANCARINA DA ESPADA</div>
+            <div class="agent-name gl-name" data-value="HAE-IN HAE-IN">HAE-IN <span>HAE-IN</span></div>
+            <div class="agent-desc">Vice-guildmaster da Guilda dos Caçadores. Possui uma habilidade de espada formidável e um olfato superdesenvolvido.</div>
+            <div class="agent-line"></div>
+          </div>
+        </div>
+
+        <!-- AGENTE 3: CHOI JONG-IN -->
+        <div class="agent" data-agent="2">
+          <div class="agent-art">
+            <img src="choijongin.jpg" alt="Choi Jong-In" onerror="this.style.display='none';">
+            <div class="img-fallback">CHOI JONG-IN</div>
+          </div>
+          
+          <img src="choiPNG.png" alt="Choi Jong-In PNG" class="character-png">
+
+          <div class="agent-info">
+            <div class="agent-number">03 / 04</div>
+            <div class="agent-role gl-role">MAGO NÍVEL S // O ULTIMATE FIREPOWER</div>
+            <div class="agent-name gl-name" data-value="CHOI CHOI">CHOI <span>CHOI</span></div>
+            <div class="agent-desc">Conhecido como o caçador mais forte de chamas e mestre da Guilda dos Caçadores.</div>
+            <div class="agent-line"></div>
+          </div>
+        </div>
+
+        <!-- AGENTE 4: SOMBRAS -->
+        <div class="agent" data-agent="3">
+          <div class="agent-art">
+            <img src="sombras.png" alt="Exército das Sombras" onerror="this.style.display='none';">
+            <div class="img-fallback">EXÉRCITO DAS SOMBRAS</div>
+          </div>
+          
+          <img src="sombraPNG1.png" alt="Exército das Sombras PNG" class="character-png">
+
+          <div class="agent-info">
+            <div class="agent-number">04 / 04</div>
+            <div class="agent-role gl-role">LEGIÃO // SOLDADOS LEAIS</div>
+            <div class="agent-name gl-name" data-value="SOMBRAS SOMBRAS">SOMBRAS <span>SOMBRAS</span></div>
+            <div class="agent-desc">Cavaleiros, magos e monstros renascidos das trevas. "Arise." Uma legião imortal pronta para obedecer.</div>
+            <div class="agent-line"></div>
+          </div>
+        </div>
+
+        <aside class="side-progress" aria-label="Progresso">
+          <div class="progress-label"><b id="progressBig">01</b>&nbsp; / 04</div>
+          <div class="progress-list">
+            <button class="progress-item active" data-go="0">01</button>
+            <button class="progress-item" data-go="1">02</button>
+            <button class="progress-item" data-go="2">03</button>
+            <button class="progress-item" data-go="3">04</button>
+          </div>
+        </aside>
+
+        <div class="foreground"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-credit">
+      Desenvolvido por 
+      <a href="https://github.com/viniciosdv" target="_blank" rel="noopener noreferrer">
+        <i class="fab fa-github"></i> viniciosdv
+      </a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const agents = [
+        {name:"JINWOO", accent:"#38bdf8", glow:"rgba(56, 189, 248, 0.45)"}, // Azul
+        {name:"HAE-IN", accent:"#facc15", glow:"rgba(250, 204, 21, 0.45)"},  // Amarelo
+        {name:"CHOI", accent:"#ef4444", glow:"rgba(239, 68, 68, 0.45)"},     // Vermelho
+        {name:"SOMBRAS", accent:"#a855f7", glow:"rgba(168, 85, 247, 0.45)"}   // Roxo
+      ];
+
+      const root = document.documentElement;
+      const body = document.body;
+      const cards = gsap.utils.toArray(".agent");
+      const progressItems = gsap.utils.toArray(".progress-item");
+      const progressBig = document.querySelector("#progressBig");
+      const lightningTransition = document.querySelector("#lightningTransition");
+
+      const urls = ["topo4.png", "sungPNG1.png", "chaPNG.png", "choiPNG.png", "sombraPNG1.png"];
+      let loaded = 0;
+      const totalAssets = urls.length;
+      const loadFill = document.querySelector("#loadFill");
+      const loadPct = document.querySelector("#loadPct");
+
+      function finishLoading(){
+        loaded++;
+        const pct = Math.round((loaded / totalAssets) * 100);
+        loadFill.style.width = pct + "%";
+        loadPct.textContent = String(pct).padStart(2,"0") + "%";
+        if(loaded === totalAssets){
+          setTimeout(() => {
+            document.querySelector(".loader").classList.add("done");
+            body.classList.remove("is-loading");
+            init();
+          }, 300);
+        }
+      }
+      
+      urls.forEach(src => {
+        const im = new Image();
+        im.onload = finishLoading;
+        im.onerror = finishLoading;
+        im.src = src;
+      });
+
+      function setAgentTheme(i){
+        root.style.setProperty("--accent", agents[i].accent);
+        root.style.setProperty("--char-glow", agents[i].glow);
+      }
+
+      function updateProgress(i){
+        progressItems.forEach((el, idx) => el.classList.toggle("active", idx === i));
+        progressBig.textContent = String(i + 1).padStart(2,"0");
+        setAgentTheme(i);
+      }
+
+      function triggerGlitch(card) {
+        const nameEl = card.querySelector(".gl-name");
+        if(!nameEl) return;
+        const originalText = nameEl.getAttribute("data-value") || "SOLO LEVELING";
+        const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*";
+        let iteration = 0;
+        
+        clearInterval(nameEl.interval);
+        nameEl.interval = setInterval(() => {
+          nameEl.innerHTML = originalText.split("").map((letter, index) => {
+            if(letter === " ") return " ";
+            if(index < iteration) return originalText[index];
+            return chars[Math.floor(Math.random() * chars.length)];
+          }).join("") + " <span>" + originalText.split(" ")[0] + "</span>";
+          
+          if(iteration >= originalText.length){
+            clearInterval(nameEl.interval);
+            nameEl.innerHTML = originalText.split(" ")[0] + " <span>" + originalText.split(" ")[0] + "</span>";
+          }
+          iteration += 1/2;
+        }, 30);
+      }
+
+      function init(){
+        gsap.registerPlugin(ScrollTrigger);
+        setAgentTheme(0);
+
+        const clock = document.querySelector("#clock");
+        const tick = () => {
+          const d = new Date();
+          clock.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()].map(v=>String(v).padStart(2,"0")).join(":");
+        };
+        tick(); setInterval(tick,1000);
+
+        window.addEventListener("mousemove", (e) => {
+          const x = (e.clientX / innerWidth - 0.5);
+          const y = (e.clientY / innerHeight - 0.5);
+          root.style.setProperty("--mx", x);
+          root.style.setProperty("--my", y);
+        }, {passive: true});
+
+        gsap.set(cards, {autoAlpha:0, x: 50});
+        gsap.set(cards[0], {autoAlpha:1, x: 0});
+        gsap.set(lightningTransition, {scaleY: 0, opacity: 0, transformOrigin: "top"});
+
+        const state = {index:0};
+
+        function showAgent(next){
+          const prev = state.index;
+          if(next === prev) return;
+
+          const direction = next > prev ? 1 : -1;
+          const oldCard = cards[prev];
+          const newCard = cards[next];
+          const oldArt = oldCard.querySelector(".agent-art");
+          const newArt = newCard.querySelector(".agent-art");
+          const oldInfo = oldCard.querySelector(".agent-info");
+          const newInfo = newCard.querySelector(".agent-info");
+          const oldPng = oldCard.querySelector(".character-png");
+          const newPng = newCard.querySelector(".character-png");
+
+          state.index = next;
+          updateProgress(next);
+
+          newCard.classList.add("active");
+          triggerGlitch(newCard);
+          
+          gsap.killTweensOf([oldCard, newCard, oldInfo, newInfo, oldArt, newArt, oldPng, newPng, lightningTransition]);
+
+          const tlStripe = gsap.timeline();
+          tlStripe.to(lightningTransition, {
+            scaleY: 1,
+            opacity: 1,
+            transformOrigin: "top",
+            duration: 0.15,
+            ease: "power2.in"
+          })
+          .set(oldCard, {autoAlpha: 0}) 
+          .set(newCard, {autoAlpha: 1, x: 0})
+          .to(lightningTransition, {
+            scaleY: 0,
+            opacity: 0,
+            transformOrigin: "bottom",
+            duration: 0.2,
+            ease: "power2.out"
+          });
+
+          gsap.fromTo(newArt, {scale: 1.05}, {scale: 1, duration: 0.45, ease: "power2.out", overwrite: "auto"});
+          gsap.fromTo(newInfo, {x: direction * 40, autoAlpha: 0}, {x: 0, autoAlpha: 1, duration: 0.4, ease: "power2.out", overwrite: "auto", delay: 0.05});
+          if(newPng) gsap.fromTo(newPng, {autoAlpha: 0, scale: 0.95}, {autoAlpha: 0.92, scale: 1, duration: 0.4, ease: "power2.out", overwrite: "auto"});
+
+          gsap.to(oldArt, {scale: 0.95, duration: 0.35, ease: "power2.in", overwrite: "auto"});
+          gsap.to(oldInfo, {autoAlpha: 0, x: direction * -30, duration: 0.3, overwrite: "auto"});
+          if(oldPng) gsap.to(oldPng, {autoAlpha: 0, duration: 0.25, overwrite: "auto"});
+        }
+
+        ScrollTrigger.create({
+          trigger: "#agents",
+          start: "top top",
+          end: "+=2000",
+          pin: true,
+          scrub: true,
+          onUpdate: (self) => {
+            const p = self.progress;
+            let targetIdx = Math.floor(p * cards.length);
+            if(targetIdx >= cards.length) targetIdx = cards.length - 1;
+            showAgent(targetIdx);
+          }
+        });
+
+        progressItems.forEach((btn, i) => {
+          btn.addEventListener("click", () => {
+            const st = ScrollTrigger.getAll()[0];
+            if(st){
+              const targetProgress = i / (cards.length - 1);
+              const targetScroll = st.start + targetProgress * (st.end - st.start);
+              window.scrollTo({top: targetScroll, behavior: "smooth"});
+            }
+          });
+        });
+
+        const canvas = document.querySelector("#particles");
+        const ctx = canvas.getContext("2d");
+        let W = 0, H = 0, dpr = 1;
+        const particles = Array.from({length: 20}, () => ({
+          x: Math.random(), y: Math.random(), r: Math.random() * 1.5 + 0.5,
+          vx: (Math.random() - .5) * 0.0001, vy: (Math.random() - .5) * 0.0001,
+          a: Math.random() * 0.4 + 0.1
+        }));
+
+        function resizeCanvas(){
+          dpr = Math.min(devicePixelRatio || 1, 1.5);
+          W = canvas.clientWidth = innerWidth; 
+          H = canvas.clientHeight = innerHeight;
+          canvas.width = W * dpr; 
+          canvas.height = H * dpr; 
+          ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        }
+        resizeCanvas(); 
+        window.addEventListener("resize", resizeCanvas, {passive: true});
+
+        function loopParticles(){
+          ctx.clearRect(0, 0, W, H);
+          for(const p of particles){
+            p.x += p.vx; p.y += p.vy;
+            if(p.x < 0) p.x = 1; if(p.x > 1) p.x = 0;
+            if(p.y < 0) p.y = 1; if(p.y > 1) p.y = 0;
+            ctx.fillStyle = `rgba(56,189,248,${p.a})`;
+            ctx.fillRect(p.x * W, p.y * H, p.r, p.r);
+          }
+          requestAnimationFrame(loopParticles);
+        }
+        loopParticles();
+
+        ScrollTrigger.config({limitCallbacks: true, ignoreMobileResize: true});
+        ScrollTrigger.refresh();
+      }
+    })();
+  </script>
+</body>
+</html>
